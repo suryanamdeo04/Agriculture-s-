@@ -69,14 +69,14 @@ with st.sidebar:
     st.markdown("### Model Details")
 st.divider()
 
-st.metric("🎯 Test Accuracy", "99.32%")
+st.metric("🎯 Test Accuracy", "99.55%")
 st.metric("🧪 Test Samples", "440")
 st.markdown("## 🧠 Model Performance & Evaluation")
 
 m1, m2 = st.columns(2)
 
 with m1:
-    st.metric("Test Accuracy", "99.32%")
+    st.metric("Test Accuracy", "99.55%")
 
 with m2:
     st.metric("Test Samples", "440")
@@ -123,7 +123,7 @@ with a:
 with b:
     st.markdown("""
     <div class="card">
-    <h2>99.32%</h2>
+    <h2>99.55%</h2>
     <p>Test Accuracy</p>
     </div>
     """, unsafe_allow_html=True)
@@ -183,65 +183,8 @@ if st.button("🌾 ANALYZE & RECOMMEND CROP", use_container_width=True):
         "Probability": probabilities * 100
     }).sort_values("Probability", ascending=False).head(5)
 
-   
     st.markdown("### 📈 Top 5 Crop Predictions")
-
-    st.markdown("""
-<style>
-.crop-card {
-    background: linear-gradient(120deg, #153a28, #204d32);
-    border: 1px solid #4c9b65;
-    border-radius: 14px;
-    padding: 18px 22px;
-    margin: 12px 0;
-}
-.crop-title {
-    color: #ffffff !important;
-    font-size: 23px !important;
-    font-weight: 900 !important;
-    text-transform: uppercase;
-}
-.crop-percent {
-    color: #b8f28d !important;
-    font-size: 21px !important;
-    font-weight: 800 !important;
-}
-.crop-track {
-    background: #355b43;
-    height: 13px;
-    border-radius: 20px;
-    overflow: hidden;
-    margin-top: 12px;
-}
-.crop-fill {
-    background: linear-gradient(90deg, #8bdc55, #d0ff91);
-    height: 13px;
-    border-radius: 20px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-    for rank, row in enumerate(chart.itertuples(index=False), start=1):
-        crop_name = str(row.Crop)
-        probability = float(row.Probability)
-        bar_width = max(0, min(probability, 100))
-
-        st.markdown(f"""
-    <div class="crop-card">
-        <div style="display:flex; justify-content:space-between;
-                    align-items:center; gap:10px;">
-            <div class="crop-title">
-                #{rank} &nbsp; {crop_name}
-            </div>
-            <div class="crop-percent">
-                {probability:.2f}%
-            </div>
-        </div>
-        <div class="crop-track">
-            <div class="crop-fill" style="width:{bar_width}%;"></div>
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.bar_chart(chart.set_index("Crop"))
 
     st.info(
         "This is a model-based recommendation, not a yield guarantee. "
@@ -267,8 +210,7 @@ if st.button("🌾 ANALYZE & RECOMMEND CROP", use_container_width=True):
         data=csv_data,
         file_name="AgriVision_Crop_Report.csv",
         mime="text/csv",
-        use_container_width=True,
-        key="agrivision_final_report_download"
+        use_container_width=True
     )
 
 st.divider()
@@ -303,10 +245,10 @@ and environmental conditions.
 
 ### Project Highlights
 
-- **Dataset:** 10,010 records (2,200 real + 7,810 synthetic)
+- **Dataset:** 2,200 records
 - **Crop Categories:** 22
 - **Algorithm:** Random Forest Classifier
-- **Model Accuracy:** 99.32% on 440 held-out real records
+- **Model Accuracy:** 99.55% on the test dataset
 - **Input Parameters:** Nitrogen, Phosphorus, Potassium,
   Temperature, Humidity, pH and Rainfall
 
@@ -320,7 +262,7 @@ st.markdown("---")
 st.header("📊 Dataset Insights")
 st.write("Explore the actual crop recommendation training dataset.")
 
-dataset = pd.read_csv("data/crop_recommendation_10k.csv")
+dataset = pd.read_csv("data/crop_recommendation.csv")
 
 d1, d2, d3 = st.columns(3)
 
@@ -331,7 +273,7 @@ with d2:
     st.metric("Crop Categories", dataset["label"].nunique())
 
 with d3:
-    st.metric("Input Features", len(dataset.columns) - 2)
+    st.metric("Input Features", len(dataset.columns) - 1)
 
 st.subheader("🌾 Crop-wise Dataset Distribution")
 crop_counts = dataset["label"].value_counts().sort_values(ascending=False)
