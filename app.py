@@ -320,7 +320,7 @@ st.markdown("---")
 st.header("📊 Dataset Insights")
 st.write("Explore the actual crop recommendation training dataset.")
 
-dataset = pd.read_csv("data/crop_recommendation.csv")
+dataset = pd.read_csv("crop_recommendation.csv")
 
 d1, d2, d3 = st.columns(3)
 
