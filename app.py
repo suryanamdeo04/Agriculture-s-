@@ -183,8 +183,65 @@ if st.button("🌾 ANALYZE & RECOMMEND CROP", use_container_width=True):
         "Probability": probabilities * 100
     }).sort_values("Probability", ascending=False).head(5)
 
+   
     st.markdown("### 📈 Top 5 Crop Predictions")
-    st.bar_chart(chart.set_index("Crop"))
+
+    st.markdown("""
+<style>
+.crop-card {
+    background: linear-gradient(120deg, #153a28, #204d32);
+    border: 1px solid #4c9b65;
+    border-radius: 14px;
+    padding: 18px 22px;
+    margin: 12px 0;
+}
+.crop-title {
+    color: #ffffff !important;
+    font-size: 23px !important;
+    font-weight: 900 !important;
+    text-transform: uppercase;
+}
+.crop-percent {
+    color: #b8f28d !important;
+    font-size: 21px !important;
+    font-weight: 800 !important;
+}
+.crop-track {
+    background: #355b43;
+    height: 13px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-top: 12px;
+}
+.crop-fill {
+    background: linear-gradient(90deg, #8bdc55, #d0ff91);
+    height: 13px;
+    border-radius: 20px;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    for rank, row in enumerate(chart.itertuples(index=False), start=1):
+        crop_name = str(row.Crop)
+        probability = float(row.Probability)
+        bar_width = max(0, min(probability, 100))
+
+        st.markdown(f"""
+    <div class="crop-card">
+        <div style="display:flex; justify-content:space-between;
+                    align-items:center; gap:10px;">
+            <div class="crop-title">
+                #{rank} &nbsp; {crop_name}
+            </div>
+            <div class="crop-percent">
+                {probability:.2f}%
+            </div>
+        </div>
+        <div class="crop-track">
+            <div class="crop-fill" style="width:{bar_width}%;"></div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     st.info(
         "This is a model-based recommendation, not a yield guarantee. "
@@ -210,7 +267,8 @@ if st.button("🌾 ANALYZE & RECOMMEND CROP", use_container_width=True):
         data=csv_data,
         file_name="AgriVision_Crop_Report.csv",
         mime="text/csv",
-        use_container_width=True
+        use_container_width=True,
+        key="agrivision_final_report_download"
     )
 
 st.divider()
