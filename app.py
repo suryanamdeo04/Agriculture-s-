@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-with open("models/crop_model.pkl", "rb") as f:
+with open("crop_model.pkl", "rb") as f:
     model = pickle.load(f)
 
 st.markdown("""
@@ -84,14 +84,14 @@ with m2:
 st.markdown("### 📊 Confusion Matrix")
 
 st.image(
-    "models/confusion_matrix.png",
+    "confusion_matrix.png",
     use_container_width=True
 )
 
 st.markdown("### 📋 Classification Report")
 
 report = pd.read_csv(
-    "models/classification_report.csv",
+    "classification_report.csv",
     index_col=0
 )
 
