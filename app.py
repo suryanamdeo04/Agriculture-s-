@@ -8,7 +8,7 @@ st.set_page_config(
     layout="wide"
 )
 
-with open("crop_model.pkl", "rb") as f:
+with open("models/crop_model.pkl", "rb") as f:
     model = pickle.load(f)
 
 st.markdown("""
@@ -69,14 +69,14 @@ with st.sidebar:
     st.markdown("### Model Details")
 st.divider()
 
-st.metric("🎯 Test Accuracy", "99.55%")
+st.metric("🎯 Test Accuracy", "99.32%")
 st.metric("🧪 Test Samples", "440")
 st.markdown("## 🧠 Model Performance & Evaluation")
 
 m1, m2 = st.columns(2)
 
 with m1:
-    st.metric("Test Accuracy", "99.55%")
+    st.metric("Test Accuracy", "99.32%")
 
 with m2:
     st.metric("Test Samples", "440")
@@ -84,14 +84,14 @@ with m2:
 st.markdown("### 📊 Confusion Matrix")
 
 st.image(
-    "confusion_matrix.png",
+    "models/confusion_matrix.png",
     use_container_width=True
 )
 
 st.markdown("### 📋 Classification Report")
 
 report = pd.read_csv(
-    "classification_report.csv",
+    "models/classification_report.csv",
     index_col=0
 )
 
@@ -123,7 +123,7 @@ with a:
 with b:
     st.markdown("""
     <div class="card">
-    <h2>99.55%</h2>
+    <h2>99.32%</h2>
     <p>Test Accuracy</p>
     </div>
     """, unsafe_allow_html=True)
@@ -303,10 +303,10 @@ and environmental conditions.
 
 ### Project Highlights
 
-- **Dataset:** 2,200 records
+- **Dataset:** 10,010 records (2,200 real + 7,810 synthetic)
 - **Crop Categories:** 22
 - **Algorithm:** Random Forest Classifier
-- **Model Accuracy:** 99.55% on the test dataset
+- **Model Accuracy:** 99.32% on 440 held-out real records
 - **Input Parameters:** Nitrogen, Phosphorus, Potassium,
   Temperature, Humidity, pH and Rainfall
 
@@ -320,7 +320,7 @@ st.markdown("---")
 st.header("📊 Dataset Insights")
 st.write("Explore the actual crop recommendation training dataset.")
 
-dataset = pd.read_csv("crop_recommendation.csv")
+dataset = pd.read_csv("data/crop_recommendation_10k.csv")
 
 d1, d2, d3 = st.columns(3)
 
@@ -331,7 +331,7 @@ with d2:
     st.metric("Crop Categories", dataset["label"].nunique())
 
 with d3:
-    st.metric("Input Features", len(dataset.columns) - 1)
+    st.metric("Input Features", len(dataset.columns) - 2)
 
 st.subheader("🌾 Crop-wise Dataset Distribution")
 crop_counts = dataset["label"].value_counts().sort_values(ascending=False)
