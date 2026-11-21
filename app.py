@@ -1521,34 +1521,176 @@ elif page == "Dataset Insights":
 # =========================================================
 elif page == "Model Performance":
 
-    section("🤖 Machine Learning Performance",
-            "Review saved evaluation outputs from the existing model.")
+    section(
+        "🤖 AI Model Performance",
+        "A detailed evaluation of the trained Random Forest crop recommendation model."
+    )
 
     report_path = "models/classification_report.csv"
     matrix_path = "models/confusion_matrix.png"
 
     if os.path.exists(report_path):
-        st.markdown('<div class="panel"><h3>📋 Classification Report</h3>',
-                    unsafe_allow_html=True)
         report = pd.read_csv(report_path)
-        st.dataframe(report, use_container_width=True)
+
+        label_col = report.columns[0]
+        report[label_col] = report[label_col].astype(str)
+        labels = report[label_col].str.strip().str.lower()
+
+        accuracy_row = report.loc[labels == "accuracy"]
+        macro_row = report.loc[labels == "macro avg"]
+
+        crop_rows = report.loc[
+            ~labels.isin(["accuracy", "macro avg", "weighted avg"])
+        ].copy()
+
+        accuracy = (
+            float(accuracy_row.iloc[0]["precision"]) * 100
+            if not accuracy_row.empty else 0.0
+        )
+        macro_precision = (
+            float(macro_row.iloc[0]["precision"]) * 100
+            if not macro_row.empty else 0.0
+        )
+        macro_recall = (
+            float(macro_row.iloc[0]["recall"]) * 100
+            if not macro_row.empty else 0.0
+        )
+        macro_f1 = (
+            float(macro_row.iloc[0]["f1-score"]) * 100
+            if not macro_row.empty else 0.0
+        )
+
+        total_samples = int(
+            pd.to_numeric(crop_rows["support"], errors="coerce").fillna(0).sum()
+        )
+        crop_count = len(crop_rows)
+
+        st.markdown("""
+        <div style="
+            background:linear-gradient(120deg,#0b261b,#145b3b,#102e22);
+            border:1px solid rgba(213,184,105,.35);
+            border-radius:22px;
+            padding:28px;
+            margin:12px 0 22px 0;
+            box-shadow:0 12px 35px rgba(0,0,0,.20);
+        ">
+            <div style="color:#e7c978;font-size:11px;font-weight:800;
+                letter-spacing:2px;">MODEL EVALUATION OVERVIEW</div>
+            <div style="color:white;font-size:34px;font-weight:850;
+                margin-top:8px;">Performance Analytics</div>
+            <div style="color:#c5ddce;font-size:14px;margin-top:7px;">
+                Real evaluation results from the saved classification report
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        metrics = [
+            ("🎯", "MODEL ACCURACY", f"{accuracy:.2f}%", "Overall test accuracy"),
+            ("🌾", "CROP CLASSES", str(crop_count), "Evaluated crop categories"),
+            ("🧪", "TEST SAMPLES", f"{total_samples:,}", "Total evaluated records"),
+            ("🏆", "MACRO F1-SCORE", f"{macro_f1:.2f}%", "Balanced class performance"),
+        ]
+
+        metric_cols = st.columns(4)
+        for col, (symbol, label, value, note) in zip(metric_cols, metrics):
+            with col:
+                st.markdown(f"""
+                <div style="
+                    background:linear-gradient(145deg,#102b20,#163d2c);
+                    border:1px solid rgba(213,184,105,.24);
+                    border-radius:17px;
+                    padding:19px 13px;
+                    min-height:145px;
+                    text-align:center;
+                    box-shadow:0 8px 22px rgba(0,0,0,.13);
+                ">
+                    <div style="font-size:23px;">{symbol}</div>
+                    <div style="color:#d9c27f;font-size:10px;
+                        font-weight:800;letter-spacing:1px;margin-top:9px;">
+                        {label}
+                    </div>
+                    <div style="color:#ffffff;font-size:27px;
+                        font-weight:850;margin:7px 0;">{value}</div>
+                    <div style="color:#b9d0c1;font-size:10px;">{note}</div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+
+        section(
+            "📈 Evaluation Scorecard",
+            "Macro-average metrics calculated from all evaluated crop classes."
+        )
+
+        score_cols = st.columns(3)
+        for col, label, value in zip(
+            score_cols,
+            ["Precision", "Recall", "F1-Score"],
+            [macro_precision, macro_recall, macro_f1]
+        ):
+            with col:
+                st.markdown(f"""
+                <div style="background:#102b20;border:1px solid #28563d;
+                    border-radius:15px;padding:17px;margin-bottom:12px;">
+                    <div style="color:#d9c27f;font-size:12px;
+                        font-weight:700;">{label}</div>
+                    <div style="color:white;font-size:25px;
+                        font-weight:800;margin-top:7px;">{value:.2f}%</div>
+                    <div style="background:#294637;height:7px;
+                        border-radius:10px;margin-top:12px;overflow:hidden;">
+                        <div style="width:{max(0,min(value,100)):.2f}%;
+                            height:7px;background:linear-gradient(90deg,
+                            #27a66a,#e2c36e);border-radius:10px;"></div>
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+
+        section(
+            "📋 Crop-wise Classification Report",
+            "Precision, recall, F1-score and test support for each crop."
+        )
+
+        display_report = crop_rows.rename(
+            columns={label_col: "Crop"}
+        ).copy()
+
+        for metric_col in ["precision", "recall", "f1-score"]:
+            if metric_col in display_report.columns:
+                display_report[metric_col] = display_report[metric_col].map(
+                    lambda value: f"{float(value) * 100:.2f}%"
+                )
+
+        st.dataframe(
+            display_report,
+            use_container_width=True,
+            hide_index=True
+        )
+
         st.download_button(
             "⬇️ Download Classification Report",
             report.to_csv(index=False),
-            file_name="classification_report.csv",
-            mime="text/csv"
+            file_name="agrivision_classification_report.csv",
+            mime="text/csv",
+            use_container_width=True
         )
-        st.markdown("</div>", unsafe_allow_html=True)
+
     else:
         st.warning("Classification report file was not found.")
 
+    section(
+        "🎯 Confusion Matrix",
+        "Visual comparison of actual crop labels against model predictions."
+    )
+
     if os.path.exists(matrix_path):
-        st.markdown('<div class="panel"><h3>🎯 Confusion Matrix</h3>',
-                    unsafe_allow_html=True)
         st.image(matrix_path, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
     else:
         st.warning("Confusion matrix image was not found.")
+
+    st.caption(
+        "Note: These metrics describe the saved evaluation results. "
+        "They do not guarantee real-world crop recommendation accuracy."
+    )
 
 # =========================================================
 # ABOUT PROJECT
